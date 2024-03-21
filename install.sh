@@ -1,7 +1,5 @@
 #!/bin/bash
 
-local install_dir="$HOME/.eparts_cli"
-
 local_has() {
   type "$1" > /dev/null 2>&1
 }
@@ -54,25 +52,31 @@ script_download() {
 }
 
 install_as_script() {
-  if [ -f "$INSTALL_DIR/eparts" ]; then
-    nvm_echo "=> eparts is already installed in $INSTALL_DIR, trying to update the script"
+  local install_dir="$HOME/.eparts_cli"
+
+  if [ -f "$install_dir/eparts" ]; then
+    nvm_echo "=> eparts is already installed in $install_dir, trying to update the script"
   else
-    nvm_echo "=> Downloading eparts as script to '$INSTALL_DIR'"
+    nvm_echo "=> Downloading eparts as script to '$install_dir'"
   fi
 
-  script_download https://example.com/eparts -o "$INSTALL_DIR/eparts" || {
-    echo >&2 "Failed to download '$INSTALL_DIR/eparts'"
+  script_download https://example.com/eparts -o "$install_dir/eparts" || {
+    echo >&2 "Failed to download '$install_dir/eparts'"
     return 1
   }
 }
 
 check_install_dir() {
+  local install_dir="$HOME/.eparts_cli"
+
   if [ ! -d "$install_dir" ]; then
-    mkdir -p "$install_dir"
+    mkdir -p "$install_dir" || { echo "Error: Failed to create directory $install_dir"; exit 1; }
   fi
 }
 
 install_cli() {
+  local install_dir="$HOME/.eparts_cli"
+
   check_dependencies
 
   check_install_dir
