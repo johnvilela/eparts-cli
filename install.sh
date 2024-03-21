@@ -92,3 +92,5 @@ install_cli() {
 
   echo "Installation complete. You can now use 'eparts' command."
 }
+
+install_cli
