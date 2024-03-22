@@ -7,67 +7,29 @@ function show_help() {
   custom_echo "Usage: eparts [command]"
   custom_echo "====================================="
   custom_echo "Commands:"
-  custom_echo " - nvm:setup  Add the nvm setup to .bashrc to identify the .nvmrc on projects"
+  custom_echo " - nvm:setup  Setup on .bashrc the NVM script to identify .npmrc automatically"
   custom_echo " - uninstall  Uninstall the CLI"
   custom_echo " - help       Show this help message"
 }
 
 # Function to handle the "command1" command
-function nvm:setup() {
+function nvm_setup() {
   custom_echo "Executing NVM setup..."
 
-  local method_content='
-    cdnvm() {
-        command cd "$@" || return $?
-        nvm_path="$(nvm_find_up .nvmrc | command tr -d '\n')"
+  local method_content=$(
+    cat <<'EOF'
+cdnvm(){ command cd "$@"||return $?;nvm_path="$(nvm_find_up .nvmrc|command tr -d 'n')";if [[!$nvm_path=*[^[:space:]]*]];then declare default_version;default_version="$(nvm version default)";if[$default_version='N/A'];then nvm alias default node;default_version=$(nvm version default);fi;if[$(nvm current)!="${default_version}"];then nvm use default;fi;elif [[-s"${nvm_path}/.nvmrc"&&-r"${nvm_path}/.nvmrc"]];then declare nvm_version;nvm_version=$(<"${nvm_path}"/.nvmrc);declare locally_resolved_nvm_version;locally_resolved_nvm_version=$(nvm ls --no-colors "${nvm_version}"|command tail -1|command tr -d '->*'|command tr -d '[:space:]');if["${locally_resolved_nvm_version}"='N/A'];then nvm install "${nvm_version}";elif[$(nvm current)!="${locally_resolved_nvm_version}"];then nvm use "${nvm_version}";fi;fi;}
+alias cd='cdnvm'
+cdnvm "$PWD"||exit
+EOF
+  )
 
-        # If there are no .nvmrc file, use the default nvm version
-        if [[ ! $nvm_path = *[^[:space:]]* ]]; then
-
-            declare default_version
-            default_version="$(nvm version default)"
-
-            # If there is no default version, set it to `node`
-            # This will use the latest version on your machine
-            if [ $default_version = "N/A" ]; then
-                nvm alias default node
-                default_version=$(nvm version default)
-            fi
-
-            # If the current version is not the default version, set it to use the default version
-            if [ "$(nvm current)" != "${default_version}" ]; then
-                nvm use default
-            fi
-        elif [[ -s "${nvm_path}/.nvmrc" && -r "${nvm_path}/.nvmrc" ]]; then
-            declare nvm_version
-            nvm_version=$(<"${nvm_path}/.nvmrc")
-
-            declare locally_resolved_nvm_version
-            # `nvm ls` will check all locally-available versions
-            # If there are multiple matching versions, take the latest one
-            # Remove the `->` and `*` characters and spaces
-            # `locally_resolved_nvm_version` will be `N/A` if no local versions are found
-            locally_resolved_nvm_version=$(nvm ls --no-colors "${nvm_version}" | command tail -1 | command tr -d '\->*' | command tr -d '[:space:]')
-
-            # If it is not already installed, install it
-            # `nvm install` will implicitly use the newly-installed version
-            if [ "${locally_resolved_nvm_version}" = "N/A" ]; then
-                nvm install "${nvm_version}";
-            elif [ "$(nvm current)" != "${locally_resolved_nvm_version}" ]; then
-                nvm use "${nvm_version}";
-            fi
-        fi
-    }
-    alias cd="cdnvm"
-    cdnvm "$PWD" || exit'
-
-    # Add the method to .bashrc if it's not already there
-    if ! grep -q "cdnvm()" "$HOME/.bashrc"; then
-        echo -e "$method_content" >> "$HOME/.bashrc"
-        custom_echo "cdnvm method added to .bashrc"
-    else
-        custom_echo "cdnvm method already exists in .bashrc"
-    fi
+  if ! grep -q "cdnvm()" "$HOME/.bashrc"; then
+    echo -e "$method_content" >>"$HOME/.bashrc"
+    custom_echo "cdnvm method added to .bashrc"
+  else
+    custom_echo "cdnvm method already exists in .bashrc"
+  fi
 }
 
 # Function to handle the "uninstall" command
@@ -75,8 +37,8 @@ function uninstall() {
   echo "Uninstalling CLI..."
 
   rm -rf "$INSTALL_DIR"
-  sed -i '/export PATH="$HOME\/.eparts_cli\/bin:$PATH"/d' "$HOME/.bashrc"
-  
+  sed -i '/export PATH="$HOME/.eparts_cli/bin:$PATH"/d' "$HOME/.bashrc"
+
   echo "CLI uninstalled successfully."
 }
 
@@ -87,17 +49,17 @@ if [[ $# -eq 0 ]]; then
 fi
 
 case $1 in
-  uninstall)
-    uninstall
-    ;;
-  nvm:setup)
-    nvm:setup
-    ;;
-  help)
-    show_help
-    ;;
-  *)
-    custom_echo "Unknown command: $1"
-    show_help
-    ;;
+uninstall)
+  uninstall
+  ;;
+nvm:setup)
+  nvm_setup
+  ;;
+help)
+  show_help
+  ;;
+*)
+  custom_echo "Unknown command: $1"
+  show_help
+  ;;
 esac

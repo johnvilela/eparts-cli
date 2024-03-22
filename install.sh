@@ -55,7 +55,7 @@ function install_as_script() {
     custom_echo "=> Downloading eparts as script to '$INSTALL_DIR'"
   fi
 
-  script_download https://raw.githubusercontent.com/johnvilela/eparts-cli/v0.0.7-alpha/eparts -o "$INSTALL_DIR/eparts" || {
+  script_download https://raw.githubusercontent.com/johnvilela/eparts-cli/v0.0.8-alpha/eparts -o "$INSTALL_DIR/eparts" || {
     echo >&2 "Failed to download '$INSTALL_DIR/eparts'"
     return 1
   }
