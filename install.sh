@@ -1,7 +1,15 @@
 #!/bin/bash
 [ -s "$HOME/.nvm/nvm.sh" ] && \. "$HOME/.nvm/nvm.sh"
 
-source ./common.sh
+INSTALL_DIR="$HOME/.eparts_cli"
+
+function local_has() {
+  type "$1" > /dev/null 2>&1
+}
+
+function custom_echo() {
+  command printf %s\\n "$*" 2>/dev/null
+}
 
 function check_dependencies() {
     local missing_packages=()
@@ -55,7 +63,7 @@ function install_as_script() {
     custom_echo "=> Downloading eparts as script to '$INSTALL_DIR'"
   fi
 
-  script_download https://raw.githubusercontent.com/johnvilela/eparts-cli/v0.0.8-alpha/eparts -o "$INSTALL_DIR/eparts" || {
+  script_download https://raw.githubusercontent.com/johnvilela/eparts-cli/v0.0.9-alpha/eparts -o "$INSTALL_DIR/eparts" || {
     echo >&2 "Failed to download '$INSTALL_DIR/eparts'"
     return 1
   }
