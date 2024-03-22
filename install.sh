@@ -55,13 +55,15 @@ function script_download() {
 }
 
 function install_as_script() {
+  custom_echo
+
   if [ -f "$INSTALL_DIR/eparts" ]; then
-    nvm_echo "=> eparts is already installed in '$INSTALL_DIR', trying to update the script"
+    custom_echo "=> eparts is already installed in '$INSTALL_DIR', trying to update the script"
   else
-    nvm_echo "=> Downloading eparts as script to '$INSTALL_DIR'"
+    custom_echo "=> Downloading eparts as script to '$INSTALL_DIR'"
   fi
 
-  script_download https://raw.githubusercontent.com/johnvilela/eparts-cli/v0.0.4-alpha/eparts -o "$INSTALL_DIR/eparts" || {
+  script_download https://raw.githubusercontent.com/johnvilela/eparts-cli/v0.0.5-alpha/eparts -o "$INSTALL_DIR/eparts" || {
     echo >&2 "Failed to download '$INSTALL_DIR/eparts'"
     return 1
   }
@@ -87,7 +89,7 @@ function install_cli() {
   echo "export PATH=\"\$PATH:$INSTALL_DIR\"" >> "$HOME/.bashrc"
   source "$HOME/.bashrc"  # Reload shell profile
 
-  echo "Installation complete. You can now use 'eparts' command."
+  custom_echo "Installation complete. You can now use 'eparts' command."
 }
 
 install_cli
