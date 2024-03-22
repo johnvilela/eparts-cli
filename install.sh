@@ -1,15 +1,7 @@
 #!/bin/bash
 [ -s "$HOME/.nvm/nvm.sh" ] && \. "$HOME/.nvm/nvm.sh"
 
-INSTALL_DIR="$HOME/.eparts_cli"
-
-function local_has() {
-  type "$1" > /dev/null 2>&1
-}
-
-function custom_echo() {
-  command printf %s\\n "$*" 2>/dev/null
-}
+source ./common.sh
 
 function check_dependencies() {
     local missing_packages=()
@@ -67,6 +59,8 @@ function install_as_script() {
     echo >&2 "Failed to download '$INSTALL_DIR/eparts'"
     return 1
   }
+
+  custom_echo
 }
 
 function check_install_dir() {

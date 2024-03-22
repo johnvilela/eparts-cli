@@ -1,8 +1,6 @@
 #!/bin/bash
 
-function custom_echo() {
-  command printf %s\\n "$*" 2>/dev/null
-}
+source ./common.sh
 
 # Function to handle the "help" command
 function show_help() {
@@ -23,9 +21,8 @@ function command1() {
 # Function to handle the "uninstall" command
 function uninstall() {
   echo "Uninstalling CLI..."
-  local install_dir="$HOME/.eparts_cli"
 
-  rm -rf "$install_dir"
+  rm -rf "$INSTALL_DIR"
   sed -i '/export PATH="$HOME\/.eparts_cli\/bin:$PATH"/d' "$HOME/.bashrc"
   
   echo "CLI uninstalled successfully."
