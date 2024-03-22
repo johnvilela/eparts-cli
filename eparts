@@ -7,15 +7,67 @@ function show_help() {
   custom_echo "Usage: eparts [command]"
   custom_echo "====================================="
   custom_echo "Commands:"
-  custom_echo "  command1   Test command1"
-  custom_echo "  uninstall  Uninstall the CLI"
-  custom_echo "  help       Show this help message"
+  custom_echo " - nvm:setup  Add the nvm setup to .bashrc to identify the .nvmrc on projects"
+  custom_echo " - uninstall  Uninstall the CLI"
+  custom_echo " - help       Show this help message"
 }
 
 # Function to handle the "command1" command
-function command1() {
-  custom_echo "Executing command1..."
-  # Add your command1 logic here
+function nvm:setup() {
+  custom_echo "Executing NVM setup..."
+
+  local method_content='
+    cdnvm() {
+        command cd "$@" || return $?
+        nvm_path="$(nvm_find_up .nvmrc | command tr -d '\n')"
+
+        # If there are no .nvmrc file, use the default nvm version
+        if [[ ! $nvm_path = *[^[:space:]]* ]]; then
+
+            declare default_version
+            default_version="$(nvm version default)"
+
+            # If there is no default version, set it to `node`
+            # This will use the latest version on your machine
+            if [ $default_version = "N/A" ]; then
+                nvm alias default node
+                default_version=$(nvm version default)
+            fi
+
+            # If the current version is not the default version, set it to use the default version
+            if [ "$(nvm current)" != "${default_version}" ]; then
+                nvm use default
+            fi
+        elif [[ -s "${nvm_path}/.nvmrc" && -r "${nvm_path}/.nvmrc" ]]; then
+            declare nvm_version
+            nvm_version=$(<"${nvm_path}/.nvmrc")
+
+            declare locally_resolved_nvm_version
+            # `nvm ls` will check all locally-available versions
+            # If there are multiple matching versions, take the latest one
+            # Remove the `->` and `*` characters and spaces
+            # `locally_resolved_nvm_version` will be `N/A` if no local versions are found
+            locally_resolved_nvm_version=$(nvm ls --no-colors "${nvm_version}" | command tail -1 | command tr -d '\->*' | command tr -d '[:space:]')
+
+            # If it is not already installed, install it
+            # `nvm install` will implicitly use the newly-installed version
+            if [ "${locally_resolved_nvm_version}" = "N/A" ]; then
+                nvm install "${nvm_version}";
+            elif [ "$(nvm current)" != "${locally_resolved_nvm_version}" ]; then
+                nvm use "${nvm_version}";
+            fi
+        fi
+    }
+    alias cd="cdnvm"
+    cdnvm "$PWD" || exit'
+
+    # Add the method to .bashrc if it's not already there
+    if ! grep -q "cdnvm()" "$HOME/.bashrc"; then
+        echo -e "$method_content" >> "$HOME/.bashrc"
+        custom_echo "cdnvm method added to .bashrc"
+    else
+        custom_echo "cdnvm method already exists in .bashrc"
+    fi
 }
 
 # Function to handle the "uninstall" command
@@ -38,14 +90,14 @@ case $1 in
   uninstall)
     uninstall
     ;;
-  command1)
-    command1
+  nvm:setup)
+    nvm:setup
     ;;
   help)
     show_help
     ;;
   *)
-    echo "Unknown command: $1"
+    custom_echo "Unknown command: $1"
     show_help
     ;;
 esac
