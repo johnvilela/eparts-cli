@@ -1,6 +1,23 @@
 #!/bin/bash
 
 INSTALL_DIR="$HOME/.eparts_cli"
+EPARTS_ROOT="$HOME/Documents/eparts"
+EPARTS_PROJECTS=(
+  "eparts-api"
+  "eparts-admin"
+  "rma-api"
+  "material-base"
+  "integration-manager"
+  "eparts-coverage"
+  "eparts-ui-v2"
+  "parts-request"
+  "event-trace-api"
+  "material-return"
+  "ept-base"
+  "claim-api"
+  "history-trace"
+  "eparts-shared"
+)
 
 function local_has() {
   type "$1" > /dev/null 2>&1
@@ -20,7 +37,41 @@ function show_help() {
   custom_echo " - help       Show this help message"
 }
 
-# Function to handle the "command1" command
+# Loop through the projects, check if the project exists in the EPARTS_ROOT directory, if exist enter the project and run npm install
+function sync_install() {
+  for project in "${EPARTS_PROJECTS[@]}"; do
+    if [ -d "$EPARTS_ROOT/$project" ]; then
+      custom_echo "Entering $project..."
+      cd "$EPARTS_ROOT/$project" || exit
+      custom_echo "Running npm install..."
+
+      if(project == "eparts-ui-v2")
+      then
+        yarn install
+
+        # TODO: Separate the feedback into a function
+        if [ $? -eq 0 ]; then
+          custom_echo "Project $project installed successfully"
+        else
+          custom_echo "Failed to install project $project"
+        fi
+      else
+        npm install 
+        
+        # TODO: Separate the feedback into a function
+        if [ $? -eq 0 ]; then
+          custom_echo "Project $project installed successfully"
+        else
+          custom_echo "Failed to install project $project"
+        fi
+      fi
+    else
+      custom_echo "Project $project does not exist in $EPARTS_ROOT"
+    fi
+  done
+}
+
+# Add the cdnvm method to .bashrc to automatically identify the .nvmrc file and use the correct node version
 function nvm_setup() {
   custom_echo "Executing NVM setup..."
 
@@ -66,9 +117,9 @@ EOF
   if ! grep -q "cdnvm()" "$HOME/.bashrc"; then
     echo -e "$method_content" >>"$HOME/.bashrc"
     source "$HOME/.bashrc"
-    custom_echo "cdnvm method added to .bashrc"
+    custom_echo "Method cdnvm added to .bashrc"
   else
-    custom_echo "cdnvm method already exists in .bashrc"
+    custom_echo "Method cdnvm already exists in .bashrc"
   fi
 }
 
@@ -91,6 +142,9 @@ fi
 case $1 in
 uninstall)
   uninstall
+  ;;
+sync:install)
+  sync_install
   ;;
 nvm:setup)
   nvm_setup
