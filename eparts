@@ -32,9 +32,10 @@ function show_help() {
   custom_echo "Usage: eparts [command]"
   custom_echo "====================================="
   custom_echo "Commands:"
-  custom_echo " - nvm:setup  Setup on .bashrc the NVM script to identify .npmrc automatically"
-  custom_echo " - uninstall  Uninstall the CLI"
-  custom_echo " - help       Show this help message"
+  custom_echo " - nvm:setup     Setup on .bashrc the NVM script to identify .npmrc automatically"
+  custom_echo " - sync:install  Install dependencies for all projects in the EPARTS_ROOT directory"
+  custom_echo " - uninstall     Uninstall the CLI"
+  custom_echo " - help          Show this help message"
 }
 
 # Loop through the projects, check if the project exists in the EPARTS_ROOT directory, if exist enter the project and run npm install
@@ -43,27 +44,19 @@ function sync_install() {
     if [ -d "$EPARTS_ROOT/$project" ]; then
       custom_echo "Entering $project..."
       cd "$EPARTS_ROOT/$project" || exit
+      custom_echo NODE VERSION: $(node -v)
       custom_echo "Running npm install..."
 
-      if(project == "eparts-ui-v2")
-      then
+      if [ "$project" == "eparts-ui-v2" ]; then
         yarn install
-
-        # TODO: Separate the feedback into a function
-        if [ $? -eq 0 ]; then
-          custom_echo "Project $project installed successfully"
-        else
-          custom_echo "Failed to install project $project"
-        fi
       else
         npm install 
-        
-        # TODO: Separate the feedback into a function
-        if [ $? -eq 0 ]; then
-          custom_echo "Project $project installed successfully"
-        else
-          custom_echo "Failed to install project $project"
-        fi
+      fi
+
+      if [ $? -eq 0 ]; then
+        custom_echo "Project $project installed successfully"
+      else
+        custom_echo "Failed to install project $project"
       fi
     else
       custom_echo "Project $project does not exist in $EPARTS_ROOT"
