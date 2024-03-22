@@ -1,17 +1,22 @@
 #!/bin/bash
 
+function custom_echo() {
+  command printf %s\\n "$*" 2>/dev/null
+}
+
 # Function to handle the "help" command
 function show_help() {
-  echo "Usage: eparts.sh [command]"
-  echo "Commands:"
-  echo "  command1   Test command1"
-  echo "  uninstall  Uninstall the CLI"
-  echo "  help       Show this help message"
+  custom_echo "Usage: eparts [command]"
+  custom_echo "====================================="
+  custom_echo "Commands:"
+  custom_echo "  command1   Test command1"
+  custom_echo "  uninstall  Uninstall the CLI"
+  custom_echo "  help       Show this help message"
 }
 
 # Function to handle the "command1" command
 function command1() {
-  echo "Executing command1..."
+  custom_echo "Executing command1..."
   # Add your command1 logic here
 }
 
@@ -29,7 +34,7 @@ function uninstall() {
 # Main script logic
 if [[ $# -eq 0 ]]; then
   show_help
-  exit 1
+  exit 0
 fi
 
 case $1 in

@@ -1,18 +1,21 @@
 #!/bin/bash
+[ -s "$HOME/.nvm/nvm.sh" ] && \. "$HOME/.nvm/nvm.sh"
 
-local_has() {
+INSTALL_DIR="$HOME/.eparts_cli"
+
+function local_has() {
   type "$1" > /dev/null 2>&1
 }
 
-custom_echo() {
+function custom_echo() {
   command printf %s\\n "$*" 2>/dev/null
 }
 
-check_dependencies() {
+function check_dependencies() {
     local missing_packages=()
 
     # Check if curl or wget is installed
-    if ! local_has "curl" | local_has "wget"; then
+    if ! local_has "curl" || ! local_has "wget"; then
         missing_packages+=("curl or wget")
     fi
 
@@ -22,7 +25,7 @@ check_dependencies() {
     fi
 
     # Check if nvm is installed
-    if ! local_has "nvm"; then
+    if ! local_has "nvm" > /dev/null 2>&1; then
         missing_packages+=("nvm")
     fi
 
@@ -32,7 +35,7 @@ check_dependencies() {
     fi
 }
 
-script_download() {
+function script_download() {
   if local_has "curl"; then
     curl --fail --compressed -q "$@"
   elif local_has "wget"; then
@@ -51,32 +54,26 @@ script_download() {
   fi
 }
 
-install_as_script() {
-  local install_dir="$HOME/.eparts_cli"
-
-  if [ -f "$install_dir/eparts" ]; then
-    nvm_echo "=> eparts is already installed in $install_dir, trying to update the script"
+function install_as_script() {
+  if [ -f "$INSTALL_DIR/eparts" ]; then
+    nvm_echo "=> eparts is already installed in '$INSTALL_DIR', trying to update the script"
   else
-    nvm_echo "=> Downloading eparts as script to '$install_dir'"
+    nvm_echo "=> Downloading eparts as script to '$INSTALL_DIR'"
   fi
 
-  script_download https://example.com/eparts -o "$install_dir/eparts" || {
-    echo >&2 "Failed to download '$install_dir/eparts'"
+  script_download https://raw.githubusercontent.com/johnvilela/eparts-cli/v0.0.4-alpha/eparts -o "$INSTALL_DIR/eparts" || {
+    echo >&2 "Failed to download '$INSTALL_DIR/eparts'"
     return 1
   }
 }
 
-check_install_dir() {
-  local install_dir="$HOME/.eparts_cli"
-
-  if [ ! -d "$install_dir" ]; then
-    mkdir -p "$install_dir" || { echo "Error: Failed to create directory $install_dir"; exit 1; }
+function check_install_dir() {
+  if [ ! -d "$INSTALL_DIR" ]; then
+    mkdir -p "$INSTALL_DIR" || { echo "Error: Failed to create directory $INSTALL_DIR"; exit 1; }
   fi
 }
 
-install_cli() {
-  local install_dir="$HOME/.eparts_cli"
-
+function install_cli() {
   check_dependencies
 
   check_install_dir
@@ -84,10 +81,10 @@ install_cli() {
   install_as_script
 
   # Set execution permissions (if necessary)
-  chmod +x "$install_dir/eparts.sh"
+  chmod +x "$INSTALL_DIR/eparts"
 
   # Update user's shell profile to include CLI in PATH (optional)
-  echo "export PATH=\"\$PATH:$install_dir\"" >> "$HOME/.bashrc"
+  echo "export PATH=\"\$PATH:$INSTALL_DIR\"" >> "$HOME/.bashrc"
   source "$HOME/.bashrc"  # Reload shell profile
 
   echo "Installation complete. You can now use 'eparts' command."
